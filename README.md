@@ -75,11 +75,16 @@ In Docker:
 
     docker run --rm -p 25565:25565 -p 8080:8080 -p 7070:7070 minecraft-storeys-maker
 
-In OpenShift, just ignore the "error: build error: No source files were specified" from the first command:
+In OpenShift:
 
-    oc new-app https://github.com/vorburger/minecraft-storeys-maker.git
+    oc new-build https://github.com/vorburger/s2i.git#gradle --context-dir=java/images/jboss
 
-    oc start-build minecraft-storeys-maker --from-dir=. --follow
+    oc new-build s2i~https://github.com/vorburger/s2i-minecraft-server.git
+    AFTER [S2I Gradle support](https://github.com/fabric8io-images/s2i/issues/118): oc new-build fabric8/s2i-java~https://github.com/vorburger/s2i-minecraft-server.git
+
+    oc new-build s2i~https://github.com/vorburger/minecraft-storeys-maker.git
+    oc new-app s2i-minecraft-server~https://github.com/vorburger/minecraft-storeys-maker.git
+    AFTER [S2I Gradle support](https://github.com/fabric8io-images/s2i/issues/118): oc new-build fabric8/s2i-java~https://github.com/vorburger/s2i-minecraft-server.git
 
     oc get pods | grep -v build
 
@@ -87,7 +92,11 @@ In OpenShift, just ignore the "error: build error: No source files were specifie
     oc port-forward minecraft-storeys-maker-.... 7070:7070
     oc port-forward minecraft-storeys-maker-.... 8080:8080
 
-You'll need to have [the "s2i-minecraft-server" base image](https://github.com/vorburger/s2i-minecraft-server) available.
+You may have to Edit YAML of the Build to change `resources: {}` to to `limits:` -CR- `memory: 2Gi`.
+
+You can send the latest local code into OpenShift using:
+
+    oc start-build minecraft-storeys-maker --from-dir=. --follow
 
 
 ## FAQ
